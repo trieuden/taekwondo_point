@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 
 // Connect to the Socket.io server running on port 3001 of the same host
-const socket = io(`https://taekwondo-point.vercel.app/`);
+const socket = io(`https://taekwondo-point.onrender.com`);
 
 function Scoreboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
