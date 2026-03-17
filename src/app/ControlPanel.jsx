@@ -1,68 +1,83 @@
-import React, { useState, useEffect } from 'react';
-import './ControlPanel.css';
+import { io } from 'socket.io-client';
+
+// Connect to the Socket.io server running on port 3001 of the same host
+const socket = io(`https://taekwondo-point.vercel.app/`);
 
 const ControlPanel = () => {
-  // Load state from localStorage or use defaults
-  const loadState = (key, defaultValue) => {
-    const saved = localStorage.getItem(key);
-    if (saved !== null) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        return saved;
-      }
-    }
-    return defaultValue;
-  };
+  // We'll manage state locally, but also listen for server sync initially
+  // to grab any existing state if the page is refreshed.
+  const [isConnected, setIsConnected] = useState(false);
 
   // Red State
-  const [redName, setRedName] = useState(() => loadState('redName', 'BẢO'));
-  const [redUnit, setRedUnit] = useState(() => loadState('redUnit', ''));
-  const [redScore, setRedScore] = useState(() => loadState('redScore', 0));
-  const [redGam, setRedGam] = useState(() => loadState('redGam', 0));
+  const [redName, setRedName] = useState('BẢO');
+  const [redUnit, setRedUnit] = useState('');
+  const [redScore, setRedScore] = useState(0);
+  const [redGam, setRedGam] = useState(0);
 
   // Blue State
-  const [blueName, setBlueName] = useState(() => loadState('blueName', 'NAM'));
-  const [blueUnit, setBlueUnit] = useState(() => loadState('blueUnit', ''));
-  const [blueScore, setBlueScore] = useState(() => loadState('blueScore', 0));
-  const [blueGam, setBlueGam] = useState(() => loadState('blueGam', 0));
+  const [blueName, setBlueName] = useState('NAM');
+  const [blueUnit, setBlueUnit] = useState('');
+  const [blueScore, setBlueScore] = useState(0);
+  const [blueGam, setBlueGam] = useState(0);
 
   // Match State
-  const [matchNumber, setMatchNumber] = useState(() => loadState('matchNumber', '1'));
-  const [roundTimeConfig, setRoundTimeConfig] = useState(() => loadState('roundTimeConfig', 30));
-  const [timeRemaining, setTimeRemaining] = useState(() => loadState('timeRemaining', 30));
-  const [isTimerRunning, setIsTimerRunning] = useState(() => loadState('isTimerRunning', false));
+  const [matchNumber, setMatchNumber] = useState('1');
+  const [roundTimeConfig, setRoundTimeConfig] = useState(30);
+  const [timeRemaining, setTimeRemaining] = useState(30);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   // New States for Round and Winner Tracking
-  const [currentRound, setCurrentRound] = useState(() => loadState('currentRound', 1));
-  const [winnerMessage, setWinnerMessage] = useState(() => loadState('winnerMessage', ''));
-  const [winnerReason, setWinnerReason] = useState(() => loadState('winnerReason', ''));
-  const [winnerColor, setWinnerColor] = useState(() => loadState('winnerColor', '#ffd700'));
-  const [redRoundScores, setRedRoundScores] = useState(() => loadState('redRoundScores', [0, 0, 0]));
-  const [blueRoundScores, setBlueRoundScores] = useState(() => loadState('blueRoundScores', [0, 0, 0]));
+  const [currentRound, setCurrentRound] = useState(1);
+  const [winnerMessage, setWinnerMessage] = useState('');
+  const [winnerReason, setWinnerReason] = useState('');
+  const [winnerColor, setWinnerColor] = useState('#ffd700');
+  const [redRoundScores, setRedRoundScores] = useState([0, 0, 0]);
+  const [blueRoundScores, setBlueRoundScores] = useState([0, 0, 0]);
 
-  // Sync state to localStorage whenever it changes
+  // Initial sync from server and connection tracking
   useEffect(() => {
-    localStorage.setItem('redName', JSON.stringify(redName));
-    localStorage.setItem('redUnit', JSON.stringify(redUnit));
-    localStorage.setItem('redScore', JSON.stringify(redScore));
-    localStorage.setItem('redGam', JSON.stringify(redGam));
-    localStorage.setItem('blueName', JSON.stringify(blueName));
-    localStorage.setItem('blueUnit', JSON.stringify(blueUnit));
-    localStorage.setItem('blueScore', JSON.stringify(blueScore));
-    localStorage.setItem('blueGam', JSON.stringify(blueGam));
-    localStorage.setItem('matchNumber', JSON.stringify(matchNumber));
-    localStorage.setItem('roundTimeConfig', JSON.stringify(roundTimeConfig));
-    localStorage.setItem('timeRemaining', JSON.stringify(timeRemaining));
-    localStorage.setItem('isTimerRunning', JSON.stringify(isTimerRunning));
-    localStorage.setItem('currentRound', JSON.stringify(currentRound));
-    localStorage.setItem('winnerMessage', JSON.stringify(winnerMessage));
-    localStorage.setItem('winnerReason', JSON.stringify(winnerReason));
-    localStorage.setItem('winnerColor', JSON.stringify(winnerColor));
-    localStorage.setItem('redRoundScores', JSON.stringify(redRoundScores));
-    localStorage.setItem('blueRoundScores', JSON.stringify(blueRoundScores));
-    // Trigger storage event manually for same-window testing (optional, usually storage event fires in other windows)
-    window.dispatchEvent(new Event('storage'));
+    socket.on('connect', () => setIsConnected(true));
+    socket.on('disconnect', () => setIsConnected(false));
+    
+    socket.on('stateUpdate', (state) => {
+       // Optional: We can listen to sync from other controls, 
+       // but typically ControlPanel is the source of truth.
+       // We'll update our local state just in case another device changed it.
+       if(state.redName !== undefined) setRedName(state.redName);
+       if(state.redScore !== undefined) setRedScore(state.redScore);
+       if(state.redGam !== undefined) setRedGam(state.redGam);
+       if(state.blueName !== undefined) setBlueName(state.blueName);
+       if(state.blueScore !== undefined) setBlueScore(state.blueScore);
+       if(state.blueGam !== undefined) setBlueGam(state.blueGam);
+       if(state.matchNumber !== undefined) setMatchNumber(state.matchNumber);
+       if(state.roundTimeConfig !== undefined) setRoundTimeConfig(state.roundTimeConfig);
+       if(state.timeRemaining !== undefined) setTimeRemaining(state.timeRemaining);
+       if(state.isTimerRunning !== undefined) setIsTimerRunning(state.isTimerRunning);
+       if(state.currentRound !== undefined) setCurrentRound(state.currentRound);
+       if(state.winnerMessage !== undefined) setWinnerMessage(state.winnerMessage);
+       if(state.winnerReason !== undefined) setWinnerReason(state.winnerReason);
+       if(state.winnerColor !== undefined) setWinnerColor(state.winnerColor);
+       if(state.redRoundScores !== undefined) setRedRoundScores(state.redRoundScores);
+       if(state.blueRoundScores !== undefined) setBlueRoundScores(state.blueRoundScores);
+    });
+
+    return () => {
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('stateUpdate');
+    };
+  }, []);
+
+  // Broadcast state via Socket.io whenever it changes locally
+  useEffect(() => {
+    const stateObj = {
+      redName, redUnit, redScore, redGam,
+      blueName, blueUnit, blueScore, blueGam,
+      matchNumber, roundTimeConfig, timeRemaining, isTimerRunning,
+      currentRound, winnerMessage, winnerReason, winnerColor,
+      redRoundScores, blueRoundScores
+    };
+    socket.emit('updateState', stateObj);
   }, [redName, redUnit, redScore, redGam, blueName, blueUnit, blueScore, blueGam, matchNumber, roundTimeConfig, timeRemaining, isTimerRunning, currentRound, winnerMessage, winnerReason, winnerColor, redRoundScores, blueRoundScores]);
 
   // Extract winner logic into a reusable function

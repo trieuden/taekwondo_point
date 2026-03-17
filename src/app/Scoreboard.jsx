@@ -1,59 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import './Scoreboard.css';
+import { io } from 'socket.io-client';
+
+// Connect to the Socket.io server running on port 3001 of the same host
+const socket = io(`https://taekwondo-point.vercel.app/`);
 
 function Scoreboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
 
-  // Sync State from Control Panel
-  const loadState = (key, defaultValue) => {
-    const saved = localStorage.getItem(key);
-    if (saved !== null) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        return saved;
-      }
-    }
-    return defaultValue;
-  };
-
-  const [redName, setRedName] = useState(() => loadState('redName', 'RED'));
-  const [redScore, setRedScore] = useState(() => loadState('redScore', 0));
-  const [redGam, setRedGam] = useState(() => loadState('redGam', 0));
-  const [blueName, setBlueName] = useState(() => loadState('blueName', 'BLUE'));
-  const [blueScore, setBlueScore] = useState(() => loadState('blueScore', 0));
-  const [blueGam, setBlueGam] = useState(() => loadState('blueGam', 0));
-  const [matchNumber, setMatchNumber] = useState(() => loadState('matchNumber', '1'));
-  const [timeRemaining, setTimeRemaining] = useState(() => loadState('timeRemaining', 30));
+  const [redName, setRedName] = useState('RED');
+  const [redScore, setRedScore] = useState(0);
+  const [redGam, setRedGam] = useState(0);
+  const [blueName, setBlueName] = useState('BLUE');
+  const [blueScore, setBlueScore] = useState(0);
+  const [blueGam, setBlueGam] = useState(0);
+  const [matchNumber, setMatchNumber] = useState('1');
+  const [timeRemaining, setTimeRemaining] = useState(30);
   
   // New States for Round and Winner
-  const [currentRound, setCurrentRound] = useState(() => loadState('currentRound', 1));
-  const [winnerMessage, setWinnerMessage] = useState(() => loadState('winnerMessage', ''));
-  const [winnerReason, setWinnerReason] = useState(() => loadState('winnerReason', ''));
-  const [winnerColor, setWinnerColor] = useState(() => loadState('winnerColor', '#ffd700'));
-  const [redRoundScores, setRedRoundScores] = useState(() => loadState('redRoundScores', [0, 0, 0]));
-  const [blueRoundScores, setBlueRoundScores] = useState(() => loadState('blueRoundScores', [0, 0, 0]));
+  const [currentRound, setCurrentRound] = useState(1);
+  const [winnerMessage, setWinnerMessage] = useState('');
+  const [winnerReason, setWinnerReason] = useState('');
+  const [winnerColor, setWinnerColor] = useState('#ffd700');
+  const [redRoundScores, setRedRoundScores] = useState([0, 0, 0]);
+  const [blueRoundScores, setBlueRoundScores] = useState([0, 0, 0]);
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      setRedName(loadState('redName', 'RED'));
-      setRedScore(loadState('redScore', 0));
-      setRedGam(loadState('redGam', 0));
-      setBlueName(loadState('blueName', 'BLUE'));
-      setBlueScore(loadState('blueScore', 0));
-      setBlueGam(loadState('blueGam', 0));
-      setMatchNumber(loadState('matchNumber', '1'));
-      setTimeRemaining(loadState('timeRemaining', 30));
-      setCurrentRound(loadState('currentRound', 1));
-      setWinnerMessage(loadState('winnerMessage', ''));
-      setWinnerReason(loadState('winnerReason', ''));
-      setWinnerColor(loadState('winnerColor', '#ffd700'));
-      setRedRoundScores(loadState('redRoundScores', [0, 0, 0]));
-      setBlueRoundScores(loadState('blueRoundScores', [0, 0, 0]));
+    socket.on('connect', () => setIsConnected(true));
+    socket.on('disconnect', () => setIsConnected(false));
+    
+    // Listen for state broadcasts from the server (coming from Control Panel)
+    const handleStateUpdate = (state) => {
+      if(state.redName !== undefined) setRedName(state.redName);
+      if(state.redScore !== undefined) setRedScore(state.redScore);
+      if(state.redGam !== undefined) setRedGam(state.redGam);
+      if(state.blueName !== undefined) setBlueName(state.blueName);
+      if(state.blueScore !== undefined) setBlueScore(state.blueScore);
+      if(state.blueGam !== undefined) setBlueGam(state.blueGam);
+      if(state.matchNumber !== undefined) setMatchNumber(state.matchNumber);
+      if(state.timeRemaining !== undefined) setTimeRemaining(state.timeRemaining);
+      if(state.currentRound !== undefined) setCurrentRound(state.currentRound);
+      if(state.winnerMessage !== undefined) setWinnerMessage(state.winnerMessage);
+      if(state.winnerReason !== undefined) setWinnerReason(state.winnerReason);
+      if(state.winnerColor !== undefined) setWinnerColor(state.winnerColor);
+      if(state.redRoundScores !== undefined) setRedRoundScores(state.redRoundScores);
+      if(state.blueRoundScores !== undefined) setBlueRoundScores(state.blueRoundScores);
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    socket.on('stateUpdate', handleStateUpdate);
+
+    return () => {
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('stateUpdate', handleStateUpdate);
+    };
   }, []);
 
   const formatTime = (seconds) => {
