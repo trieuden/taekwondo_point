@@ -1,0 +1,159 @@
+* {
+  box-sizing: border-box;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+}
+
+.scoreboard-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  color: white;
+  text-align: center;
+}
+
+.side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.blue-side {
+  background-color: #2196f3;
+}
+
+.red-side {
+  background-color: #f44336;
+}
+
+.center-console {
+  width: 300px; /* or flex: 0 0 300px */
+  background-color: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.team-name {
+  font-size: 2rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.score {
+  font-size: 15rem;
+  font-weight: 500;
+  line-height: 1;
+  margin-bottom: 20px;
+}
+
+.gam-score {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.round-scores {
+  font-size: 1.5rem;
+}
+
+.match-number {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.timer-box {
+  border: 4px solid #00ff00;
+  padding: 10px 30px;
+  margin-bottom: 10px;
+  width: 90%;
+}
+
+.timer {
+  font-size: 5rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.round-number {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.full-button {
+  background-color: white;
+  color: black;
+  border: none;
+  padding: 15px 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  width: 90%;
+  text-transform: uppercase;
+}
+.full-button:active {
+  background-color: #ddd;
+}
+
+.fullscreen-btn {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 1000;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.fullscreen-btn:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.winner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  pointer-events: none; /* Let clicks pass through if needed, though mostly decorative */
+}
+
+.winner-popup {
+  background-color: #ffd700;
+  color: #000;
+  padding: 40px 80px;
+  font-size: 5rem;
+  font-weight: 800;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  text-transform: uppercase;
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
