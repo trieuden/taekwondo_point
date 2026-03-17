@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
+import './Scoreboard.css';
 
 // Connect to the Socket.io server running on port 3001 of the same host
 const socket = io(`https://taekwondo-point.onrender.com`);
